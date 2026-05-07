@@ -1,0 +1,181 @@
+<!DOCTYPE html>
+<html lang="ja">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+
+<title>TraceGuide</title>
+
+<style>
+html, body {
+    margin: 0;
+    padding: 0;
+    overflow: hidden;
+    background: black;
+    font-family: sans-serif;
+}
+
+#camera {
+    position: fixed;
+    width: 100vw;
+    height: 100vh;
+    object-fit: cover;
+}
+
+#overlay {
+    position: fixed;
+    top: 40%;
+    left: 50%;
+
+    transform: translate(-50%, -50%);
+
+    font-size: 48px;
+    font-weight: bold;
+
+    color: white;
+    -webkit-text-stroke: 2px black;
+
+    opacity: 0.5;
+
+    cursor: move;
+    user-select: none;
+}
+
+#textInput{
+    position: fixed;
+    top: 20px;
+    left: 20px;
+    z-index: 10;
+
+    font-size: 20px;
+    padding: 10px;
+
+    border: none;
+    border-radius: 10px;
+
+    width: 220px;
+}
+
+.label{
+    position: fixed;
+    left: 20px;
+    z-index: 10;
+
+    color: white;
+    font-size: 16px;
+    font-weight: bold;
+
+    text-shadow: 0 0 4px black;
+}
+
+.label-size{
+    top: 70px;
+}
+
+.label-opacity{
+    top: 130px;
+}
+
+#sizeSlider{
+    position: fixed;
+    top: 95px;
+    left: 20px;
+    z-index: 10;
+
+    width: 240px;
+}
+
+#opacitySlider{
+    position: fixed;
+    top: 155px;
+    left: 20px;
+    z-index: 10;
+
+    width: 240px;
+}
+</style>
+</head>
+
+<body>
+
+<video id="camera" autoplay playsinline></video>
+
+<input type="text" id="textInput" placeholder="名前を入力">
+
+<div class="label label-size">サイズ</div>
+<input type="range" id="sizeSlider" min="20" max="150" value="48">
+
+<div class="label label-opacity">透明度</div>
+<input type="range" id="opacitySlider" min="0.1" max="1" step="0.1" value="0.5">
+
+<div id="overlay">りく</div>
+
+<script>
+const video = document.getElementById("camera");
+const overlay = document.getElementById("overlay");
+const textInput = document.getElementById("textInput");
+const sizeSlider = document.getElementById("sizeSlider");
+const opacitySlider = document.getElementById("opacitySlider");
+
+navigator.mediaDevices.getUserMedia({
+    video: {
+        facingMode: "environment"
+    }
+})
+.then(stream => {
+    video.srcObject = stream;
+})
+.catch(err => {
+    alert("カメラが使えません");
+    console.error(err);
+});
+
+textInput.addEventListener("input", () => {
+    overlay.textContent = textInput.value;
+});
+
+sizeSlider.addEventListener("input", () => {
+    overlay.style.fontSize = sizeSlider.value + "px";
+});
+
+opacitySlider.addEventListener("input", () => {
+    overlay.style.opacity = opacitySlider.value;
+});
+
+let isDragging = false;
+
+overlay.addEventListener("mousedown", () => {
+    isDragging = true;
+});
+
+document.addEventListener("mouseup", () => {
+    isDragging = false;
+});
+
+document.addEventListener("mousemove", (e) => {
+    if (isDragging) {
+        overlay.style.left = e.clientX + "px";
+        overlay.style.top = e.clientY + "px";
+    }
+});
+
+overlay.addEventListener("touchstart", () => {
+    isDragging = true;
+});
+
+document.addEventListener("touchend", () => {
+    isDragging = false;
+});
+
+document.addEventListener("touchmove", (e) => {
+    if (isDragging) {
+        const touch = e.touches[0];
+
+        overlay.style.left = touch.clientX + "px";
+        overlay.style.top = touch.clientY + "px";
+    }
+});
+</script>
+
+</body>
+</html>
