@@ -30,7 +30,7 @@ html, body {
     transform: translate(-50%, -50%);
 
     font-size: 48px;
-    font-weight: 200;
+    font-weight: 400;
 
     color: white;
     -webkit-text-stroke: 2px black;
@@ -40,6 +40,8 @@ html, body {
     cursor: move;
     user-select: none;
     white-space: nowrap;
+
+    font-family: sans-serif;
 }
 
 #textInput{
@@ -81,6 +83,14 @@ html, body {
     top: 190px;
 }
 
+.label-weight{
+    top: 260px;
+}
+
+.label-color{
+    top: 330px;
+}
+
 #sizeSlider{
     position: fixed;
     top: 95px;
@@ -113,6 +123,36 @@ html, body {
     border: none;
     border-radius: 8px;
 }
+
+#weightSelect{
+    position: fixed;
+    top: 285px;
+    left: 20px;
+    z-index: 10;
+
+    width: 250px;
+
+    font-size: 16px;
+    padding: 8px;
+
+    border: none;
+    border-radius: 8px;
+}
+
+#colorSelect{
+    position: fixed;
+    top: 355px;
+    left: 20px;
+    z-index: 10;
+
+    width: 250px;
+
+    font-size: 16px;
+    padding: 8px;
+
+    border: none;
+    border-radius: 8px;
+}
 </style>
 </head>
 
@@ -131,12 +171,23 @@ html, body {
 <div class="label label-font">フォント</div>
 
 <select id="fontSelect">
-    <option value="sans-serif">Sans Serif</option>
+    <option value="sans-serif" selected>Sans Serif</option>
     <option value="serif">Serif</option>
     <option value="monospace">Monospace</option>
     <option value="cursive">Cursive</option>
     <option value="'Yu Gothic', sans-serif">Yu Gothic</option>
     <option value="'Hiragino Maru Gothic Pro', sans-serif">丸ゴシック</option>
+</select>
+
+<div class="label label-weight">文字の太さ</div>
+
+<select id="weightSelect"></select>
+
+<div class="label label-color">色</div>
+
+<select id="colorSelect">
+    <option value="white-black" selected>白文字 / 黒フチ</option>
+    <option value="black-white">黒文字 / 白フチ</option>
 </select>
 
 <div id="overlay">文字を入力</div>
@@ -148,6 +199,8 @@ const textInput = document.getElementById("textInput");
 const sizeSlider = document.getElementById("sizeSlider");
 const opacitySlider = document.getElementById("opacitySlider");
 const fontSelect = document.getElementById("fontSelect");
+const weightSelect = document.getElementById("weightSelect");
+const colorSelect = document.getElementById("colorSelect");
 
 navigator.mediaDevices.getUserMedia({
     video: {
@@ -174,9 +227,104 @@ opacitySlider.addEventListener("input", () => {
     overlay.style.opacity = opacitySlider.value;
 });
 
+const fontWeights = {
+
+    "sans-serif": [
+        ["100", "Thin"],
+        ["200", "Light"],
+        ["400", "Normal"],
+        ["700", "Bold"]
+    ],
+
+    "serif": [
+        ["400", "Normal"],
+        ["700", "Bold"]
+    ],
+
+    "monospace": [
+        ["400", "Normal"],
+        ["700", "Bold"]
+    ],
+
+    "cursive": [
+        ["400", "Normal"],
+        ["700", "Bold"]
+    ],
+
+    "'Yu Gothic', sans-serif": [
+        ["100", "Thin"],
+        ["200", "Light"],
+        ["400", "Normal"],
+        ["700", "Bold"]
+    ],
+
+    "'Hiragino Maru Gothic Pro', sans-serif": [
+        ["400", "Normal"],
+        ["700", "Bold"]
+    ]
+};
+
+function updateWeightOptions(font) {
+
+    weightSelect.innerHTML = "";
+
+    fontWeights[font].forEach(weight => {
+
+        const option =
+        document.createElement("option");
+
+        option.value = weight[0];
+        option.textContent = weight[1];
+
+        if (
+            font === "sans-serif" &&
+            weight[0] === "400"
+        ) {
+            option.selected = true;
+        }
+
+        weightSelect.appendChild(option);
+    });
+
+    overlay.style.fontWeight =
+    weightSelect.value;
+}
+
 fontSelect.addEventListener("change", () => {
-    overlay.style.fontFamily = fontSelect.value;
+
+    const font =
+    fontSelect.value;
+
+    overlay.style.fontFamily = font;
+
+    updateWeightOptions(font);
 });
+
+weightSelect.addEventListener("change", () => {
+
+    overlay.style.fontWeight =
+    weightSelect.value;
+});
+
+colorSelect.addEventListener("change", () => {
+
+    if (colorSelect.value === "white-black") {
+
+        overlay.style.color = "white";
+
+        overlay.style.webkitTextStroke =
+        "2px black";
+
+    } else {
+
+        overlay.style.color = "black";
+
+        overlay.style.webkitTextStroke =
+        "2px white";
+    }
+});
+
+updateWeightOptions(fontSelect.value);
 
 let isDragging = false;
 
@@ -189,9 +337,14 @@ document.addEventListener("mouseup", () => {
 });
 
 document.addEventListener("mousemove", (e) => {
+
     if (isDragging) {
-        overlay.style.left = e.clientX + "px";
-        overlay.style.top = e.clientY + "px";
+
+        overlay.style.left =
+        e.clientX + "px";
+
+        overlay.style.top =
+        e.clientY + "px";
     }
 });
 
@@ -204,12 +357,17 @@ document.addEventListener("touchend", () => {
 });
 
 document.addEventListener("touchmove", (e) => {
+
     if (isDragging) {
 
-        const touch = e.touches[0];
+        const touch =
+        e.touches[0];
 
-        overlay.style.left = touch.clientX + "px";
-        overlay.style.top = touch.clientY + "px";
+        overlay.style.left =
+        touch.clientX + "px";
+
+        overlay.style.top =
+        touch.clientY + "px";
     }
 });
 </script>
